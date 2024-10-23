@@ -185,8 +185,6 @@ retry:
 	goto retry;
 }
 
-static int unpin_current_cpu_warning_count = 0;
-
 /**
  * unpin_current_cpu - Allow unplug of current cpu
  *
@@ -197,10 +195,6 @@ void unpin_current_cpu(void)
 	struct hotplug_pcp *hp = this_cpu_ptr(&hotplug_pcp);
 
 	WARN_ON(hp->refcount <= 0);
-	if (hp->refcount <= 0) {
-		if (++unpin_current_cpu_warning_count > 3)
-			panic("unpin_current_cpu_warning_count > 3");
-	}
 
 	/* This is safe. sync_unplug_thread is pinned to this cpu */
 	if (!--hp->refcount && hp->unplug && hp->unplug != current)
