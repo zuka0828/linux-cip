@@ -3243,7 +3243,8 @@ void migrate_enable(void)
 		WARN_ON_ONCE(1);
 	}
 #endif
-	WARN_ON_ONCE(p->migrate_disable <= 0);
+	if (p->migrate_disable <= 0)
+		panic("%s: p->migrate_disable <= 0\n", __func__);
 
 	if (p->migrate_disable > 1) {
 		p->migrate_disable--;
