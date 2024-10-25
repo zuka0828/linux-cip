@@ -2338,12 +2338,17 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 	unsigned long flags;
 	struct page *page;
 	bool cold = ((gfp_flags & __GFP_COLD) != 0);
+	bool irqs_disabled_before_lock = false;
+
+	if (irqs_disabled())
+		irqs_disabled_before_lock = true;
 
 	if (likely(order == 0)) {
 		struct per_cpu_pages *pcp;
 		struct list_head *list;
 
 		local_lock_irqsave(pa_lock, flags);
+		WARN_ON(irqs_disabled_before_lock && !irqs_disabled());
 		pcp = &this_cpu_ptr(zone->pageset)->pcp;
 		list = &pcp->lists[migratetype];
 		if (list_empty(list)) {
@@ -2376,6 +2381,7 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 			WARN_ON_ONCE(order > 1);
 		}
 		local_spin_lock_irqsave(pa_lock, &zone->lock, flags);
+		WARN_ON(irqs_disabled_before_lock && !irqs_disabled());
 
 		page = NULL;
 		if (alloc_flags & ALLOC_HARDER) {
@@ -2631,9 +2637,6 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 	struct zone *zone;
 	int nr_fair_skipped = 0;
 	bool zonelist_rescan;
-
-	if (irqs_disabled())
-		printk(KERN_ERR "__GFP_ATOMIC=%d\n", !!(gfp_mask & __GFP_ATOMIC));
 
 zonelist_scan:
 	zonelist_rescan = false;
