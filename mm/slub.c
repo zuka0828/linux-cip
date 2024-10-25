@@ -1415,9 +1415,13 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	if (system_state == SYSTEM_RUNNING)
 		enableirqs = true;
 #endif
-	if (enableirqs)
+	if (enableirqs) {
+		printk(KERN_ERR "%s: allow_blocking=%d atomic=%d system_state=%d\n",
+		       gfpflags_allow_blocking(flags),
+		       !!(flags & __GFP_ATOMIC),
+		       system_state);
 		local_irq_enable();
-
+	}
 	flags |= s->allocflags;
 
 	/*
