@@ -2632,7 +2632,8 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 	int nr_fair_skipped = 0;
 	bool zonelist_rescan;
 
-	WARN_ON((irqs_disabled() || in_atomic()) && !(gfp_mask & __GFP_ATOMIC));
+	if (irqs_disabled())
+		printk(KERN_ERR "__GFP_ATOMIC=%d\n", (gfp_mask & __GFP_ATOMIC) ? 1 : 0);
 
 zonelist_scan:
 	zonelist_rescan = false;
