@@ -2348,7 +2348,8 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 		struct list_head *list;
 
 		local_lock_irqsave(pa_lock, flags);
-		WARN_ON(irqs_disabled_before_lock && !irqs_disabled());
+		if (irqs_disabled_before_lock && !irqs_disabled())
+			panic("%s: IRQ enabled by local_lock_irqsave()\n", __func__);
 		pcp = &this_cpu_ptr(zone->pageset)->pcp;
 		list = &pcp->lists[migratetype];
 		if (list_empty(list)) {
@@ -2381,7 +2382,8 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 			WARN_ON_ONCE(order > 1);
 		}
 		local_spin_lock_irqsave(pa_lock, &zone->lock, flags);
-		WARN_ON(irqs_disabled_before_lock && !irqs_disabled());
+		if (irqs_disabled_before_lock && !irqs_disabled())
+			panic("%s: IRQ enabled by local_spin_lock_irqsave()\n", __func__);
 
 		page = NULL;
 		if (alloc_flags & ALLOC_HARDER) {
